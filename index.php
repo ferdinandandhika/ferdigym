@@ -45,13 +45,13 @@ $katalog = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <div class="carousel-inner">
                 <div class="carousel-item active">
-                    <img src="img/slide1.jpg" class="d-block w-100" alt="Gym Equipment">
+                    <img src="assets/1.png" class="d-block w-100" alt="Gym Equipment">
                 </div>
                 <div class="carousel-item">
-                    <img src="img/slide2.jpg" class="d-block w-100" alt="Training Session">
+                    <img src="assets/2.png" class="d-block w-100" alt="Training Session">
                 </div>
                 <div class="carousel-item">
-                    <img src="img/slide3.jpg" class="d-block w-100" alt="Fitness Class">
+                    <img src="assets/3.png" class="d-block w-100" alt="Fitness Class">
                 </div>
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#carouselFerdiGym" data-bs-slide="prev">
@@ -87,9 +87,8 @@ $katalog = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="row">
                 <?php foreach($katalog as $item): ?>
                 <div class="col-md-3" data-aos="flip-left">
-                    <div class="card katalog-card" style="cursor:pointer" 
-                         data-bs-toggle="modal" 
-                         data-bs-target="#modalKatalog<?= $item['id'] ?>">
+                    <div class="card katalog-card"
+                         style="background: linear-gradient(135deg, <?= htmlspecialchars($item['warna'] ?? '#fff') ?> 0%, #fff 100%);">
                         <div class="card-body text-center">
                             <h5 class="card-title"><?= htmlspecialchars($item['judul']) ?></h5>
                             <p class="duration"><?= htmlspecialchars($item['durasi']) ?></p>

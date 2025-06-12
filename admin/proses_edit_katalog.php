@@ -11,8 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $durasi = $_POST['durasi'];
     $harga = $_POST['harga'];
     $fitur = $_POST['fitur'];
-    $stmt = $conn->prepare("UPDATE katalog SET judul=?, durasi=?, harga=?, fitur=? WHERE id=?");
-    $stmt->execute([$judul, $durasi, $harga, $fitur, $id]);
+    $warna = $_POST['warna'];
+    $stmt = $conn->prepare("UPDATE katalog SET judul=?, durasi=?, harga=?, fitur=?, warna=? WHERE id=?");
+    $stmt->execute([$judul, $durasi, $harga, $fitur, $warna, $id]);
     header('Location: manajemen_katalog.php');
     exit();
 }

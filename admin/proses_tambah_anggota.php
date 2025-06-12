@@ -6,25 +6,21 @@ if (!isset($_SESSION['admin_logged_in'])) {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nama = $_POST['nama'];
-    $notelp = $_POST['notelp'];
-    $tier = $_POST['tier'];
-    $waktu_mulai = $_POST['waktu_mulai'];
-    $waktu_berakhir = $_POST['waktu_berakhir'];
+$nama = $_POST['nama'];
+$deskripsi = $_POST['deskripsi'];
+$notelp = $_POST['notelp'];
+$waktu_mulai = $_POST['waktu_mulai'];
+$waktu_berakhir = $_POST['waktu_berakhir'];
+$katalog_id = $_POST['katalog_id'];
 
-    // Upload foto
-    $foto_name = '';
-    if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
-        $ext = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
-        $foto_name = uniqid() . '.' . $ext;
-        move_uploaded_file($_FILES['foto']['tmp_name'], '../uploads/' . $foto_name);
-    }
-
-    $stmt = $conn->prepare("INSERT INTO anggota (nama, foto, notelp, tier, waktu_mulai, waktu_berakhir) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$nama, $foto_name, $notelp, $tier, $waktu_mulai, $waktu_berakhir]);
-
-    header('Location: manajemen_anggota.php');
-    exit();
+// Proses upload foto (jika ada)
+$foto_data = null;
+if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
+    $foto_data = file_get_contents($_FILES['foto']['tmp_name']);
 }
+
+$stmt = $conn->prepare("INSERT INTO anggota (nama, deskripsi, foto, notelp, waktu_mulai, waktu_berakhir, katalog_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+$stmt->execute([$nama, $deskripsi, $foto_data, $notelp, $waktu_mulai, $waktu_berakhir, $katalog_id]);
+header('Location: manajemen_anggota.php');
+exit();
 ?>

@@ -10,8 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $durasi = $_POST['durasi'];
     $harga = $_POST['harga'];
     $fitur = $_POST['fitur'];
-    $stmt = $conn->prepare("INSERT INTO katalog (judul, durasi, harga, fitur) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$judul, $durasi, $harga, $fitur]);
+    $warna = $_POST['warna'];
+    $stmt = $conn->prepare("INSERT INTO katalog (judul, durasi, harga, fitur, warna) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([$judul, $durasi, $harga, $fitur, $warna]);
     header('Location: manajemen_katalog.php');
     exit();
 }

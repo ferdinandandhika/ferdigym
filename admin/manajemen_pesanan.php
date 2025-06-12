@@ -9,6 +9,10 @@ if (!isset($_SESSION['admin_logged_in'])) {
 // Ambil data pemesanan
 $stmt = $conn->query("SELECT * FROM pemesanan ORDER BY waktu_buat DESC");
 $pemesanan = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Ambil data anggota untuk dropdown
+$stmt_anggota = $conn->query("SELECT nama FROM anggota ORDER BY nama ASC");
+$anggota_list = $stmt_anggota->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -80,7 +84,14 @@ $pemesanan = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <form action="proses_tambah_pesanan.php" method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="nama_pemesan" class="form-label">Nama Pemesan</label>
-                            <input type="text" class="form-control" id="nama_pemesan" name="nama_pemesan" required>
+                            <select class="form-control" id="nama_pemesan" name="nama_pemesan" required>
+                                <option value="">Pilih Nama Anggota</option>
+                                <?php foreach($anggota_list as $anggota): ?>
+                                    <option value="<?= htmlspecialchars($anggota['nama']) ?>">
+                                        <?= htmlspecialchars($anggota['nama']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="bukti" class="form-label">Bukti Pemesanan (Gambar)</label>

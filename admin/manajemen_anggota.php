@@ -10,8 +10,30 @@ if (!isset($_SESSION['admin_logged_in'])) {
 $stmt = $conn->query("SELECT * FROM anggota ORDER BY id DESC");
 $anggota = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Daftar tier/paket
-$tier_list = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+// Ambil data katalog untuk dropdown
+$stmt_katalog = $conn->query("SELECT id, judul FROM katalog ORDER BY judul ASC");
+$katalog_list = $stmt_katalog->fetchAll(PDO::FETCH_ASSOC);
+
+$edit_mode = false;
+$edit_data = [
+    'id' => '',
+    'nama' => '',
+    'deskripsi' => '',
+    'notelp' => '',
+    'tier' => '',
+    'waktu_mulai' => '',
+    'waktu_berakhir' => '',
+    'foto' => '',
+    'katalog_id' => ''
+];
+
+if (isset($_GET['edit'])) {
+    $edit_mode = true;
+    $id = intval($_GET['edit']);
+    $stmt_edit = $conn->prepare("SELECT * FROM anggota WHERE id = ?");
+    $stmt_edit->execute([$id]);
+    $edit_data = $stmt_edit->fetch(PDO::FETCH_ASSOC);
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -80,37 +102,52 @@ $tier_list = ['Bronze', 'Silver', 'Gold', 'Platinum'];
             <!-- Form tambah anggota -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <form action="proses_tambah_anggota.php" method="POST" enctype="multipart/form-data">
+                    <form action="<?= $edit_mode ? 'proses_edit_anggota.php' : 'proses_tambah_anggota.php' ?>" method="POST" enctype="multipart/form-data">
+                        <?php if($edit_mode): ?>
+                            <input type="hidden" name="id" value="<?= htmlspecialchars($edit_data['id']) ?>">
+                        <?php endif; ?>
                         <div class="mb-3">
                             <label for="nama" class="form-label">Nama</label>
-                            <input type="text" class="form-control" id="nama" name="nama" required>
+                            <input type="text" class="form-control" id="nama" name="nama" required value="<?= htmlspecialchars($edit_data['nama']) ?>">
                         </div>
                         <div class="mb-3">
-                            <label for="foto" class="form-label">Foto</label>
-                            <input type="file" class="form-control" id="foto" name="foto" accept="image/*" required>
+                            <label for="deskripsi" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="deskripsi" name="deskripsi" rows="2"><?= htmlspecialchars($edit_data['deskripsi']) ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="foto" class="form-label">Foto <?= $edit_mode && $edit_data['foto'] ? '(Kosongkan jika tidak ingin ganti)' : '' ?></label>
+                            <input type="file" class="form-control" id="foto" name="foto" accept="image/*" <?= $edit_mode ? '' : 'required' ?> onchange="previewFoto(event)">
+                            <br>
+                            <img id="preview-foto" src="<?= $edit_mode && $edit_data['foto'] ? '../uploads/'.htmlspecialchars($edit_data['foto']) : '#' ?>" alt="Preview Foto" style="max-width:100px;<?= $edit_mode && $edit_data['foto'] ? '' : 'display:none;' ?>">
                         </div>
                         <div class="mb-3">
                             <label for="notelp" class="form-label">No. Telepon</label>
-                            <input type="text" class="form-control" id="notelp" name="notelp" required>
+                            <input type="text" class="form-control" id="notelp" name="notelp" required value="<?= htmlspecialchars($edit_data['notelp']) ?>">
                         </div>
                         <div class="mb-3">
-                            <label for="tier" class="form-label">Tier/Paket</label>
-                            <select class="form-control" id="tier" name="tier" required>
-                                <option value="">Pilih Tier</option>
-                                <?php foreach($tier_list as $tier): ?>
-                                    <option value="<?= $tier ?>"><?= $tier ?></option>
+                            <label for="katalog_id" class="form-label">Paket Katalog</label>
+                            <select class="form-control" id="katalog_id" name="katalog_id" required>
+                                <option value="">Pilih Paket Katalog</option>
+                                <?php foreach($katalog_list as $katalog): ?>
+                                    <option value="<?= $katalog['id'] ?>"
+                                        <?= (isset($edit_data['katalog_id']) && $edit_data['katalog_id'] == $katalog['id']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($katalog['judul']) ?>
+                                    </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="mb-3">
                             <label for="waktu_mulai" class="form-label">Waktu Mulai</label>
-                            <input type="date" class="form-control" id="waktu_mulai" name="waktu_mulai" required>
+                            <input type="date" class="form-control" id="waktu_mulai" name="waktu_mulai" required value="<?= htmlspecialchars($edit_data['waktu_mulai']) ?>">
                         </div>
                         <div class="mb-3">
                             <label for="waktu_berakhir" class="form-label">Waktu Berakhir</label>
-                            <input type="date" class="form-control" id="waktu_berakhir" name="waktu_berakhir" required>
+                            <input type="date" class="form-control" id="waktu_berakhir" name="waktu_berakhir" required value="<?= htmlspecialchars($edit_data['waktu_berakhir']) ?>">
                         </div>
-                        <button type="submit" class="btn btn-primary">Tambah Anggota</button>
+                        <button type="submit" class="btn btn-primary"><?= $edit_mode ? 'Edit' : 'Tambah' ?> Anggota</button>
+                        <?php if($edit_mode): ?>
+                            <a href="manajemen_anggota.php" class="btn btn-secondary ms-2">Batal</a>
+                        <?php endif; ?>
                     </form>
                 </div>
             </div>
@@ -126,10 +163,12 @@ $tier_list = ['Bronze', 'Silver', 'Gold', 'Platinum'];
                                     <th>No</th>
                                     <th>Nama</th>
                                     <th>Foto</th>
+                                    <th>Deskripsi</th>
                                     <th>No. Telp</th>
-                                    <th>Tier</th>
+                                    <th>Paket Katalog</th>
                                     <th>Waktu Mulai</th>
                                     <th>Waktu Berakhir</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -139,13 +178,43 @@ $tier_list = ['Bronze', 'Silver', 'Gold', 'Platinum'];
                                     <td><?= htmlspecialchars($row['nama']) ?></td>
                                     <td>
                                         <?php if($row['foto']): ?>
-                                            <img src="../uploads/<?= htmlspecialchars($row['foto']) ?>" alt="Foto" width="50">
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#modalFoto<?= $row['id'] ?>">
+                                                <img src="data:image/jpeg;base64,<?= base64_encode($row['foto']) ?>" alt="Foto" width="70" style="cursor:pointer;">
+                                            </a>
+                                            <!-- Modal Preview Foto -->
+                                            <div class="modal fade" id="modalFoto<?= $row['id'] ?>" tabindex="-1" aria-labelledby="modalFotoLabel<?= $row['id'] ?>" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-body text-center">
+                                                            <img src="data:image/jpeg;base64,<?= base64_encode($row['foto']) ?>" alt="Foto" style="max-width:100%;">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="text-muted">Tidak ada foto</span>
                                         <?php endif; ?>
                                     </td>
+                                    <td><?= htmlspecialchars($row['deskripsi']) ?></td>
                                     <td><?= htmlspecialchars($row['notelp']) ?></td>
-                                    <td><?= htmlspecialchars($row['tier']) ?></td>
+                                    <td>
+                                        <?php
+                                        $katalog_nama = '';
+                                        foreach($katalog_list as $katalog) {
+                                            if($katalog['id'] == $row['katalog_id']) {
+                                                $katalog_nama = $katalog['judul'];
+                                                break;
+                                            }
+                                        }
+                                        echo htmlspecialchars($katalog_nama);
+                                        ?>
+                                    </td>
                                     <td><?= htmlspecialchars($row['waktu_mulai']) ?></td>
                                     <td><?= htmlspecialchars($row['waktu_berakhir']) ?></td>
+                                    <td>
+                                        <a href="manajemen_anggota.php?edit=<?= $row['id'] ?>" class="btn btn-sm btn-warning">Edit</a>
+                                        <a href="hapus_anggota.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus anggota ini?')">Delete</a>
+                                    </td>
                                 </tr>
                                 <?php endforeach; ?>
                                 <?php if(count($anggota) == 0): ?>
@@ -162,5 +231,15 @@ $tier_list = ['Bronze', 'Silver', 'Gold', 'Platinum'];
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function previewFoto(event) {
+    const [file] = event.target.files;
+    if (file) {
+        const preview = document.getElementById('preview-foto');
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+    }
+}
+</script>
 </body>
 </html>

@@ -13,7 +13,8 @@ $edit_data = [
     'judul' => '',
     'durasi' => '',
     'harga' => '',
-    'fitur' => ''
+    'fitur' => '',
+    'warna' => '#ffffff'
 ];
 
 if (isset($_GET['edit'])) {
@@ -98,6 +99,11 @@ $katalog = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <label for="fitur" class="form-label">Fitur</label>
                             <textarea class="form-control" id="fitur" name="fitur" rows="3" required><?= htmlspecialchars($edit_data['fitur']) ?></textarea>
                             <div class="form-text">Pisahkan setiap fitur dengan baris baru.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="warna" class="form-label">Warna Gradasi</label>
+                            <input type="color" class="form-control form-control-color" id="warna" name="warna"
+                                value="<?= isset($edit_data['warna']) ? htmlspecialchars($edit_data['warna']) : '#ffffff' ?>">
                         </div>
                         <button type="submit" class="btn btn-primary"><?= $edit_mode ? 'Edit' : 'Tambah' ?></button>
                         <?php if($edit_mode): ?>
